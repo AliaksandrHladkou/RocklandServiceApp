@@ -1,0 +1,203 @@
+﻿@page "/"
+
+@using RocklandServiceApp.Models
+
+@inject RocklandServiceApp.Service.IFileService _fService
+@inject RocklandServiceApp.Service.IFileUpload _fUpload
+@inject IJSRuntime js
+
+<h1>Your Order</h1>
+<hr />
+
+@if (!pdfView)
+{
+    <div class="order-form">
+        <EditForm Model="@customer" OnValidSubmit="@PlaceCustomer">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="col">
+                <div class="row">
+                    <div class="col user-input">
+                        <InputText class="form-control" @bind-Value="customer.FirstName" placeholder="First name" />
+                    </div>
+                    <div class="col user-input">
+                        <InputText class="form-control" @bind-Value="customer.LastName" placeholder="Last name" />
+                    </div>
+                </div>
+                <div class="row user-input-street">
+                    <InputText class="form-control" @bind-Value="customer.StreetAddress" placeholder="Street Address" />
+                </div>
+                <div class="row">
+                    <div class="col user-input">
+                        <InputText class="form-control" @bind-Value="customer.CityAddress" placeholder="City" />
+                    </div>
+                    <div class="col user-input">
+                        <InputText class="form-control" @bind-Value="customer.State" placeholder="State" />
+                    </div>
+                    <div class="col user-input">
+                        <InputText class="form-control" @bind-Value="customer.ZipCode" placeholder="Zip Code" />
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col">
+                        <div class="row">
+                            <p style="color: red; font-size: 1.1rem;">@errMessage</p>
+                        </div>
+                        <div class="row">
+                            <div class="col"><BlazorInputFile.InputFile OnChange="HandleFileSelected" /></div>
+                            @if (fileModel.Files != null && fileModel.Files.Count > 0)
+                            {
+                                <div class="col">@fileModel.Files[0].Name</div>
+                            }
+                        </div>
+                        <div class="drag-and-drop">
+                            <BlazorInputFile.InputFile OnChange="HandleFileSelected" />
+                            @if (files is null || files.Count == 0)
+                            {
+                                <div>
+                                    @dropMessage
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    @dropMessage
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-left: 2rem;">
+                    @if (fileModel.Files != null && fileModel.Files.Count > 0)
+                    {
+                        <div class="row">
+                            <div class="col view-btn container" @onclick="@(e=> DisplayFile(@fileModel.Files[0].FileId))">
+                                <div class="container h-100">
+                                    <div class="row h-100 justify-content-center align-items-center">
+                                        View File
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col view-btn" @onclick="@(e=> NewTabDisplay(@fileModel.Files[0].FileId))">
+                                <div class="container h-100">
+                                    <div class="row h-100 justify-content-center align-items-center">
+                                        View In New Tab
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <hr />
+                <div class="col">
+                    <div class="col-md-4 col-md-offset-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col view-btn container" style="background-color: red;" @onclick="@ChangeView">
+            <div class="container h-100">
+                <div class="row h-100 justify-content-center align-items-center">
+                    Close
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        @if (isOnCurrentPage)
+        {
+            <iframe src="/files/@fileName" style="width:100%; height:1200px;"></iframe>
+        }
+    </div>
+}
+
+
+@code
+{
+    private List<IFileListEntry> files;
+    private CustomerModel customer = new CustomerModel();
+    private FileModel fileModel = new FileModel();
+
+    private string fileName = "";
+    private bool isOnCurrentPage = false;
+    private string dropMessage = "Drag your file here";
+    private string errMessage = "";
+    private bool pdfView = false;
+
+    private async Task HandleFileSelected(IFileListEntry[] entryFiles)
+    {
+        errMessage = "";
+        files = new List<IFileListEntry>();
+        foreach (var file in entryFiles)
+        {
+            if (file != null)
+            {
+                if (file.Type == "application/pdf")
+                {
+                    try
+                    {
+                        files.Add(file);
+                        await _fUpload.UploadAsync(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
+                }
+                else
+                {
+                    errMessage = "Wrong file type! Your file was: " + file.Type;
+                }
+            }
+        }
+        fileModel.Files = _fService.GetAll();
+        dropMessage = "Or, Drop Again To Change File";
+    }
+
+    /// <summary>
+    /// Display file on current page.
+    /// </summary>
+    /// <param name="fileid">ID of the file to display.</param>
+    private void DisplayFile(int fileid)
+    {
+        fileName = fileModel.Files.FirstOrDefault(x => x.FileId == fileid).Name;
+        isOnCurrentPage = true;
+        pdfView = true;
+    }
+
+    /// <summary>
+    /// Option to display PDF file on new tab.
+    /// </summary>
+    /// <param name="fileId">ID of the file to display.</param>
+    private void NewTabDisplay(int fileId)
+    {
+        isOnCurrentPage = false;
+        fileName = fileModel.Files.SingleOrDefault(x => x.FileId == fileId).Name;
+        js.InvokeVoidAsync("OnNewTab", fileName);
+    }
+
+    /// <summary>
+    /// Change views between pdf and form
+    /// </summary>
+    private void ChangeView()
+    {
+        if (pdfView)
+            pdfView = false;
+        else
+            pdfView = true;
+    }
+
+    private async Task PlaceCustomer()
+    {
+        //On Valid Submit the order should be placed.
+        //Currently just muted
+        await Task.CompletedTask;
+    }
+}

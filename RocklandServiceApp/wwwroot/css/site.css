@@ -1,0 +1,109 @@
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #0366d6;
+}
+
+.user-input {
+    max-width: 50%;
+}
+.user-input, .user-input-street {
+    margin: 0.2rem;
+}
+
+.view-btn {
+    min-width: 11rem;
+    max-width: 12rem;
+    height: 3rem;
+    background-color: #6A53F6;
+    margin: 0.2rem;
+    color: white;
+    font-size: 1.1rem;
+    border-radius: 0.4rem;
+}
+
+    .view-btn:hover {
+        background-color: #968DD6;
+        font-size: 1.2rem;
+    }
+
+.order-form {
+    background-color: lightgray;
+    width: 70%;
+    height: 100%;
+    padding: 2rem;
+    box-shadow: 0 0px 0px rgba(82,168,236,.8) inset, 0 0 20px #264480;
+    opacity: 0.9;
+}
+
+.drag-and-drop {
+    background-color: #E9E6CF;
+    width: 100%;
+    font-size: 1.6rem;
+    border: 2px dashed #A90A0A;
+    padding: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aeaeae;
+    cursor: pointer;
+    margin: 1.5rem 0 2rem 0;
+    position: relative;
+}
+
+    .drag-and-drop:hover {
+        background-color: #EAEAEA;
+    }
+
+    .drag-and-drop input[type=file] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
